@@ -1,0 +1,135 @@
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form,
+	fieldset, input, textarea, p, blockquote, th, td {
+	margin: 0;
+	padding: 0;
+	font-family: "HelveticaNeue-Light", "Helvetica Neue Light",
+		"Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+fieldset, img {
+	border: 0;
+}
+
+address, caption, cite, code, dfn, em, strong, th, var {
+	font-style: normal;
+	font-weight: normal;
+}
+
+caption, th {
+	text-align: left;
+}
+
+q:before, q:after {
+	content: '';
+}
+
+abbr, acronym {
+	border: 0;
+}
+
+body {
+	background: #fff;
+}
+/* optional Container STYLES */
+.chart {
+	height: auto;
+	margin: 5px;
+	width: 100%;
+	overflow-x: scroll;
+}
+
+.Treant>.node {
+	padding: 3px;
+	border: 2px solid lightgrey;
+}
+
+.Treant .collapse-switch {
+	width: 12px;
+	height: 12px;
+	display: block;
+	border: 1px solid grey;
+	position: absolute;
+	top: 42%;
+	right: 1px;
+	cursor: pointer;
+}
+
+.Treant .node.collapsed {
+	border: 2px solid lightgrey;
+}
+
+.Treant .node.collapsed .collapse-switch {
+	background: url(../img/plus.png);
+	background-size: 10px 10px;
+	background-repeat: no-repeat;
+}
+
+.Treant>p {
+	font-family: "HelveticaNeue-Light", "Helvetica Neue Light",
+		"Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+	font-weight: bold;
+	font-size: 10px;
+}
+
+.node-name {
+	font-weight: bold;
+}
+
+.brmNode {
+	padding: 2px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	background-color: #efefef;
+	border: 2px solid lightgrey;
+	width: 200px;
+	font-family: Tahoma;
+	font-size: 10px;
+}
+
+.brmNode img {
+	margin-right: 10px;
+	width: 50px;
+	height: 50px;
+}
+
+.corp {
+	background-color: #ddd6e5;
+}
+
+.osva {
+	background-color: #efefef;
+}
+
+.vha {
+	background-color: #c1e0ff;
+}
+
+.vba {
+	background-color: #c4d6a0;
+}
+
+.nca {
+	background-color: #ebbe92;
+}
+
+.oit {
+	background-color: #fcf1c2;
+}
+
+.ohra {
+	background-color: #f5e9e6;
+}
+
+.om {
+	background-color: #dcf9f7;
+}
+
+.oalc {
+	background-color: #fef9e7;
+}

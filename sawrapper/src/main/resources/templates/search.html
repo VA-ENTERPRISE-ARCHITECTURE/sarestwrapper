@@ -1,0 +1,486 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="ctx" th:content="@{/}" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<title>VEAMS System Architect Explorer</title>
+<!-- Bootstrap -->
+<link rel="stylesheet"
+	href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+	integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+	crossorigin="anonymous">
+<link rel="stylesheet" href="style/bootstrap-theme.min.css" />
+<link rel="stylesheet" href="style/vaea.css">
+</head>
+
+<body>
+	<!--  Start Header -->
+	<div class="container-fluid">
+		<div id="header">
+			<div class="main-header clearfix">
+				<div id="main-logo">
+					<a href="https://www.va.gov" title="Go to VA.gov" class="logo"><img
+						src="img/va_logo.png"
+						alt="Official seal of the United States Department of Veterans Affairs" /></a>
+				</div>
+				<div id="header-text">
+					<h5 style="border-bottom: 1px solid white">VA Enterprise
+						Architecture</h5>
+					<h5>SA Explorer</h5>
+				</div>
+			</div>
+		</div>
+			<div class="container-fluid">
+				<div class="alert alert-primary" role="alert">The VA EA Management Suite (VEAMS) is a collection of modeling, 
+				data management, and content publishing tools assembled into an information technology (IT) environment that 
+				enables the creation, maintenance, and use of VA EA information. The architecture modeling content of the 
+				VEAMS is managed by the System Architect (SA) tool. This application provides the real-time visibility to the 
+				content hosted in the SA encyclopedias.</div>
+			</div>
+		
+	</div>
+
+	<div class="container-fluid">
+		<form action="#" th:action="@{/search}" th:object="${searchOption}"
+			method="post">
+			<div class="form-row">
+				<div class="col">
+					<div class="form-group">
+						<label for="encOption">Encyclopedia/Work Space</label> <select
+							th:field="*{encOption}" id="encOption" class="form-control">
+							<option value='' selected>Choose...</option>
+							<!--  
+							<option th:each="pl:${searchOption.pickList}" th:value="${pl.id}" th:text="${pl.name}" />
+							-->
+<!-- 							<option value="RestAPI/2">RestAPI - VA EA Dev</option>
+							<option value="RestAPI/3">RestAPI - VA EA Production</option>
+ -->							<option value="VAEA_Workspaces/2">VAEA_Workspaces - VA
+								EA Dev</option>
+							<option value="VAEA_Workspaces/3">VAEA_Workspaces - VA
+								EA Production</option>
+							<option value="VEAR_FMBT_Baseline/1">VEAR_FMBT_Baseline</option>
+							<option value="VEAR_MetaModel/1">VEAR_MetaModel</option>
+							<option value="VEAR_NCA/1">VEAR_NCA</option>
+							<option value="VEAR_VBA_Workspaces/2">VEAR_VBA_Workspaces
+								- Current State</option>
+							<option value="VEAR_VBA_Workspaces/3">VEAR_VBA_Workspaces
+								- Future State</option>
+
+						</select>
+					</div>
+				</div>
+				<div class="col" >
+					<div id="typeOptionContainer">
+						<label for="typeOption">Type</label> <select
+							id="typeOption" class="form-control">
+							<option value='' selected>Choose...</option>
+							<option value="diagrams">Diagrams</option>
+							<option value="definitions">Definitions</option>
+							</select>
+					</div>
+				</div>
+				<div class="col">
+					<div id="diagTypeOptionContainer">
+						<label for="diagTypeOption">Diagram Types</label> <select
+							id="diagTypeOption" class="form-control">
+							<option value='' selected>Choose...</option>
+							</select>
+					</div>
+					<div id="defTypeOptionContainer">
+						<label for="defTypeOption">Definition Types</label> <select
+							id="defTypeOption" class="form-control">
+							<option value='' selected>Choose...</option>
+							</select>
+					</div>
+				</div>
+				<div class="col">
+					<div id="diagOptionContainer">
+						<label for="diagOption">List of Diagrams</label> <select
+							id="diagOption" class="form-control">
+							<option value='' selected>Choose...</option>
+							</select>
+					</div>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<button type="submit" id="submitBtn" class="btn btn-primary">Submit</button>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<br />
+	<div id="resultsPane">
+	<div id="loadingDiv"><span class="loading-text">Loading...</span></div>
+	<div id="definitionContainer" class="container-fluid">
+	<div class="row align-items-start">
+			<div class="col">
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col">Definitions</th>
+						</tr>
+					</thead>
+					<tbody id="defResults">
+						
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div id="diagramContainer"></div>
+	</div>
+	<!-- <div id="resultsPane"
+		th:if="${not #lists.isEmpty(searchOption.definitions)}"
+		class="container-fluid">
+		<div class="row align-items-start">
+			<div class="col">
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col">Definitions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="type: ${searchOption.definitions.types}">
+						<td><a th:href="${type.href}"
+								th:text="${type.formattedName}"> </a></td>							
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="col">
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col">Diagrams</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="type: ${searchOption.diagrams.types}">
+							<td><a href="#" th:text="${type.formattedName}" th:onclick="'javascript:openModalWindow(\'' + ${type.href} + '\');'">
+								</a></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div> -->
+	<br />
+	<div class="container-fluid">
+		<div id="footer">
+			<div class="btn-group">
+				<a title="Intranet site for Department of Veterans Affairs"
+					target="_blank" href="http://vaww.va.gov/">VA Intranet Home</a> | <a
+					title="Intranet site for Veterans Health Administration"
+					target="_blank" href="http://vaww.va.gov/health/">VHA Intranet
+					Home</a> | <a
+					title="Intranet site for Veterans Benefits Administration"
+					target="_blank" href="http://vbaw.vba.va.gov/">VBA Intranet
+					Home</a> | <a
+					title="Intranet site for National Cemetery Administration"
+					target="_blank" href="http://vaww.nca.va.gov/">NCA Intranet
+					Home</a> | <a title="Section 508 Accessibility" target="_blank"
+					href="http://vaww.section508.va.gov/">Section 508 Accessibility</a>
+				| <a title="Privacy policy" target="_blank"
+					href="http://www.va.gov/privacy/">Privacy Policy</a> | <a
+					title="No Fear Act information" target="_blank"
+					href="http://vaww.va.gov/ohrm/EmployeeRelations/grievance.htm">No
+					Fear Act</a> | <a title="VA Enterprise Architecture Website"
+					target="_blank" href="http://vaww.ea.oit.va.gov">VA Enterprise
+					Architecture</a>
+			</div>
+		</div>
+	</div>
+	<!-- Modal Pop-up -->
+	<div id="sa_obj" class="modal">
+		<!-- Modal content -->
+		<div id="a_content" class="modal-content">
+			<div class="modal-header">
+				<span class="close" onclick="closeModalWindow()"><img
+					src="img/close.ico" style="width: 25px; height: 25px;"></span>
+			</div>
+			<div class="modal-body">
+				<iframe id="modal_content" width="100%" height="600px" frameborder="0"
+					allowtransparency="true"></iframe>
+			</div>
+			<!-- 
+			<div class="modal-footer">
+				<button id="closeModalWindow" onclick="closeModalWindow()"
+					class="btn btn-primary">Close</button>
+			</div>
+			 -->
+		</div>
+	</div>
+
+	<!--  End Footer -->
+	<!-- Latest compiled and minified JavaScript -->
+	<!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+		crossorigin="anonymous"></script> -->
+		
+	<script
+  		src="http://code.jquery.com/jquery-3.3.1.min.js"
+  		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  		crossorigin="anonymous"></script>
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+		integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+		crossorigin="anonymous"></script>
+	<script
+		src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+		integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+		crossorigin="anonymous"></script>
+	<script src="scripts/svg-pan-zoom.js"></script>
+	<script>
+	
+		$(function() {
+			
+			$('#resultsPane').hide();
+			$('#definitionContainer').hide();
+			$('#diagramContainer').hide();
+			$('#loadingDiv').hide();
+			$('#submitBtn').attr('disabled', 'disabled');
+			$('#typeOptionContainer').hide();
+			$('#diagTypeOptionContainer').hide();
+			$('#defTypeOptionContainer').hide();
+			$('#diagOptionContainer').hide();
+			
+			var url = window.location.href;
+			 if(url.indexOf("inapp=true")!=-1)//inap = true
+			 {
+				 $('#header').hide();
+				 $('#footer').hide();
+			 }
+			 
+			 
+			  var _ctx = $("meta[name='ctx']").attr("content");
+			 //console.log("context_path value: "+_ctx);
+			 
+				// Prepend context path to all jQuery AJAX requests
+				$.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+				    if (!options.crossDomain) {
+				        options.url = _ctx + options.url;
+				    }
+				}); 
+			 
+			
+			$('#encOption').change(function() {
+				$('#submitBtn').attr('disabled', 'disabled');
+				$('#resultsPane').hide();
+				$('#definitionContainer').hide();
+				$('#diagramContainer').hide();
+				$('#loadingDiv').hide();
+				$('#typeOptionContainer').hide();
+				$('#typeOption').val('');
+				$('#diagTypeOptionContainer').hide();
+				$('#diagTypeOption option[value!=""]').remove();
+				$('#defTypeOptionContainer').hide();
+				$('#defTypeOption option[value!=""]').remove();
+				
+				$('#diagOptionContainer').hide();
+				$('#diagOption option[value!=""]').remove(); 
+				//populate type drop-down getting diagtypes and deftypes
+				
+				var encOptionVal = encodeURIComponent($('#encOption').val());
+				
+				if($('#encOption').val()!=''){
+					$('#typeOptionContainer').show();
+				}
+				
+				
+			});
+			$('#typeOption').change(function() {
+				$('#submitBtn').attr('disabled', 'disabled');
+				$('#resultsPane').hide();
+				$('#definitionContainer').hide();
+				$('#diagramContainer').hide();
+				$('#loadingDiv').hide();
+				$('#diagTypeOptionContainer').hide();
+				$('#diagTypeOption option[value!=""]').remove();
+				$('#defTypeOptionContainer').hide();
+				$('#defTypeOption option[value!=""]').remove();
+				
+				$('#diagOptionContainer').hide();
+				$('#diagOption option[value!=""]').remove(); 
+				
+				var encOptionVal = encodeURIComponent($('#encOption').val());
+				 if ($('#typeOption').val()=='diagrams'){
+					
+					var diagtype_data_url = '/rest/api/diagram-types?encOption='+encOptionVal;
+					$.getJSON(diagtype_data_url,function(data){
+			    		$.each(data, function(index, entry){
+			    			
+			    			$('#diagTypeOption').append($('<option></option>').attr('value',entry.type).attr('data-ent-type', 'diagtype').text(entry.Name));
+			    		}); 
+			    		 $('#diagTypeOptionContainer').show();
+			    	});
+					
+				}else  if ($('#typeOption').val()=='definitions'){
+					
+	    			var deftype_data_url = "/rest/api/definition-types?encOption="+encOptionVal;
+	    			$.getJSON(deftype_data_url,function(data){
+			    		$.each(data, function(key, entry){
+			    			$('#defTypeOption').append($('<option></option>').attr('value',entry.type).attr('data-ent-type', 'deftype').text(entry.Name));
+			    		}); 
+			    		$('#defTypeOptionContainer').show();
+			    	});
+	    			
+				}
+		    			
+		    			
+			});
+			$('#diagTypeOption').change(function() {
+				var encOptionVal = encodeURIComponent($('#encOption').val());
+				var diagTypeOptionVal = encodeURIComponent($('#diagTypeOption').val())
+				$('#submitBtn').attr('disabled', 'disabled');
+				$('#resultsPane').hide();
+				$('#definitionContainer').hide();
+				$('#diagramContainer').hide();
+				$('#loadingDiv').hide();
+				$('#diagOptionContainer').hide();
+				$('#diagOption option[value!=""]').remove();
+				 if ($('#diagTypeOption').val()!=''){
+				//populate diag or def dropdown and hide/show relevant one
+				
+					
+					
+					var diags_data_url = "/rest/api/diagrams?encOption="+encOptionVal+"&diagramType="+diagTypeOptionVal;
+	    			$.getJSON(diags_data_url,function(data){
+			    		$.each(data, function(index, entry){
+			    			$('#diagOption').append($('<option></option>').attr('value',entry.ID).text(entry.name));
+			    		}); 
+			    		$('#diagOptionContainer').show();
+			    	});
+	    			
+				
+				 }
+			});
+			$('#defTypeOption').change(function() {
+				$('#resultsPane').hide(); 
+				$('#definitionContainer').hide();
+				$('#diagramContainer').hide();
+				$('#loadingDiv').hide();
+				 if ($('#defTypeOption').val()!=''){
+					 $('#submitBtn').removeAttr('disabled');
+				 }else{
+					 $('#submitBtn').attr('disabled', 'disabled');
+						
+				 }
+				
+				
+				
+				
+			});
+			$('#diagOption').change(function() {
+				$('#resultsPane').hide(); 
+				 if ($('#diagOption').val()!=''){
+					 $('#submitBtn').removeAttr('disabled');
+				 }else{
+					 $('#submitBtn').attr('disabled', 'disabled');
+						
+				 }
+			});
+			
+			$('#submitBtn').click(function (event){
+				event.preventDefault();
+				$('#loadingDiv').show();
+	    		$('#diagramContainer').hide();
+	    		$('#resultsPane').show();
+	    		$('#definitionContainer').hide();
+				var encOptionVal = encodeURIComponent($('#encOption').val());
+				
+				if ($('#typeOption').val()=='diagrams'){
+				
+					var diagTypeOptionVal = encodeURIComponent($('#diagTypeOption').val())
+					var diagOptionVal = encodeURIComponent($('#diagOption').val());
+					var diag_data_url = "/rest/api/diagram?encOption="+encOptionVal+"&diagramType="+diagTypeOptionVal+"&diagramId="+diagOptionVal ;
+					$.getJSON(diag_data_url,function(data){
+			    		
+			    		 
+			    		$('#diagramContainer').empty();
+			    		$('#loadingDiv').hide();
+			    		if(data['Status']=='Success'){
+			    			console.log($(data["svgImageData"]));
+			    		$('#diagramContainer').show();
+			    		$('#definitionContainer').hide();
+			    		$('#diagramContainer').append($(data["svgImageData"]));
+			    		$('#diagramContainer').height($(window).height()-20);
+			    		$('#resultsPane').show();
+			    		
+			    		if(window.svgDiagram && window.svgDiagram != null){
+			    			window.svgDiagram.destroy();
+			    		}
+			    		
+			    		window.svgDiagram = svgPanZoom($('#diagramContainer svg').get(0), {
+			    	          zoomEnabled: true,
+			    	          controlIconsEnabled: true,
+			    	          fit: true,
+			    	          center: true,
+			    	        });
+			    		}else {
+			    			alert("ERROR: Failed to get the SVG image for the selected diagram")
+			    		}
+			    		
+			    	}).fail(function(jqxhr,status, error){
+			    		$('#loadingDiv').hide();
+			    		console.log(status);
+			    		console.log(error);
+			    		console.log(jqxhr.responseText);
+			    	});
+    			
+				}else {
+					
+					var defTypeOptionVal = encodeURIComponent($('#defTypeOption').val())
+					$('#submitBtn').attr('disabled', 'disabled');
+					
+					//populate diag or def dropdown and hide/show relevant one
+					 if ($('#defTypeOption').val()!=''){
+						
+						
+						var defs_data_url = "/rest/api/definitions?encOption="+encOptionVal+"&definitionType="+defTypeOptionVal ;
+		    			$.getJSON(defs_data_url,function(data){
+		    				
+		    				$('#defResults').empty();
+				    		$.each(data, function(key, entry){
+				    			
+				    		 if ( entry.VEAR_Link !=null){
+				    			$('#defResults').append($('<tr><td><a href="'+entry.VEAR_Link+'" target="_blank">'+entry.name+'</a></td></tr>'));
+				    		 }else{
+				    			 $('#defResults').append($('<tr><td>'+entry.name+'</td></tr>'));
+				    		 }
+				    		}); 
+				    		$('#loadingDiv').hide();
+				    		$('#diagramContainer').hide();
+				    		$('#resultsPane').show();
+				    		$('#definitionContainer').show();
+				    	});
+					}
+				}
+				
+			});
+			
+			
+		});
+	</script>
+	<script>
+		function openModalWindow(contentURL) {
+			var modal = document.getElementById('sa_obj');
+			var modal_content = document.getElementById('modal_content');
+			document.getElementById('a_content').style.width = "90%";
+			modal_content.src = "/result";
+			modal.style.display = "block";
+		}
+		function closeModalWindow() {
+			var modal = document.getElementById('sa_obj');
+			var modal_content = document.getElementById('modal_content');
+			modal_content.src = '';
+			modal.style.display = "none";
+		}
+	</script>
+</body>
+</html>

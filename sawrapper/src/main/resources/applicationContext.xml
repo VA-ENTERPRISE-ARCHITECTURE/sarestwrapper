@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+
+	<bean id="propLoc" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+<!-- 		<property name="locations" value="file:///${catalina.base}/conf/vear-application.properties"/>    -->
+	 <property name="locations" value="file:///C:/Development/docs/application.properties"/>
+	</bean>
+
+	<bean id="saRestLogin" class="gov.va.ea.sa.api.configuration.SaRestLogin">
+		<property name="restUrl" value="${vear.saRest.url}"/>
+		<property name="restUser" value="${vear.saRest.username}"/>
+		<property name="restPassword" value="${vear.saRest.password}"/>
+	</bean>
+
+	<!-- Data Source Connection Pool -->
+	<bean id="vaeawDs" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	    <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+	    <property name="url" value="jdbc:sqlserver://${vear.sa.sqlServer.url}:${vear.sa.sqlServer.port};databaseName=${vear.sa.sqlServer.databaseName.vaeawDs}" />
+	    <property name="username" value="${vear.sa.sqlServer.username}"/>
+	    <property name="password" value="${vear.sa.sqlServer.password}"/>
+	</bean>
+
+	<bean id="vaeawJdbcTemplate"
+		class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="vaeawDs"></property>
+	</bean>
+
+	<bean id="fmbtDs" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	    <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+	    <property name="url" value="jdbc:sqlserver://${vear.sa.sqlServer.url}:${vear.sa.sqlServer.port};databaseName=${vear.sa.sqlServer.databaseName.fmbtDs}" />
+	    <property name="username" value="${vear.sa.sqlServer.username}"/>
+	    <property name="password" value="${vear.sa.sqlServer.password}"/>
+	</bean>
+
+	<bean id="fmbtJdbcTemplate"
+		class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="fmbtDs"></property>
+	</bean>
+	
+	<bean id="eaMetaDs" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	    <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+	    <property name="url" value="jdbc:sqlserver://${vear.sa.sqlServer.url}:${vear.sa.sqlServer.port};databaseName=${vear.sa.sqlServer.databaseName.eaMetaDs}" />
+	    <property name="username" value="${vear.sa.sqlServer.username}"/>
+	    <property name="password" value="${vear.sa.sqlServer.password}"/>
+	</bean>
+
+	<bean id="eaMetaJdbcTemplate"
+		class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="eaMetaDs"></property>
+	</bean>
+	
+	<bean id="ncaDs" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	    <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+	    <property name="url" value="jdbc:sqlserver://${vear.sa.sqlServer.url}:${vear.sa.sqlServer.port};databaseName=${vear.sa.sqlServer.databaseName.ncaDs}" />
+	    <property name="username" value="${vear.sa.sqlServer.username}"/>
+	    <property name="password" value="${vear.sa.sqlServer.password}"/>
+	</bean>
+
+	<bean id="ncaJdbcTemplate"
+		class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="ncaDs"></property>
+	</bean>
+
+	<bean id="vbaDs" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	    <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+	     <property name="url" value="jdbc:sqlserver://${vear.sa.sqlServer.url}:${vear.sa.sqlServer.port};databaseName=${vear.sa.sqlServer.databaseName.vbaDs}" />
+	    <property name="username" value="${vear.sa.sqlServer.username}"/>
+	    <property name="password" value="${vear.sa.sqlServer.password}"/>
+	</bean>
+
+	<bean id="vbaJdbcTemplate"
+		class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="vbaDs"></property>
+	</bean>
+</beans> 

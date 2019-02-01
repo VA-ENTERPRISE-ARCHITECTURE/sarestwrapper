@@ -1,0 +1,6 @@
+/.classpath
+/.project
+/target/*
+/.settings/*
+/src/main/resources/vear_application.properties
+/src/main/resources/application.properties
