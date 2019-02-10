@@ -1,21 +1,22 @@
 package gov.va.ea.sa.api.controller;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
-
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.batik.transcoder.Transcoder;
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.fop.svg.PDFTranscoder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -50,14 +51,6 @@ public class SAWrapperRestController {
 
 	return sADatabaseService.getDifinitionsVearLink(encOption, definitionType);
 
-	// Map<String, String> result = new HashMap<>();
-	// result.put(encOption + definitionType + "def1", encOption + definitionType +
-	// "Fist Definition");
-	//
-	// result.put(encOption + definitionType + "def2", encOption + definitionType +
-	// "Second Definition");
-	// return result;
-
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/diagrams")
@@ -67,60 +60,16 @@ public class SAWrapperRestController {
 
     }
 
-    // @RequestMapping(method = RequestMethod.GET, value = "/diagram")
-    // public Map<String, Object> getDiagrams(@RequestParam String encOption,
-    // @RequestParam String diagramType,
-    // @RequestParam String diagramId) {
-    // String encyclopedia = encOption.substring(0, encOption.indexOf("/"));
-    // String workspaceId = encOption.substring(encOption.indexOf("/") + 1);
-    //
-    // Map<String, Object> result = new HashMap<>();
-    // String imageURL =
-    // "http://vaausdarapp83.aac.dva.va.gov:27000/SARest/SQL/vaausdarsql80/" +
-    // encyclopedia + "/"
-    // + workspaceId + "/Diagrams/aaaaa/" + diagramId + "/Image/SVG";
-    // result.put("svgImageUrl", imageURL);
-    //
-    // try {
-    // String encResp = this.restTemplate.getForObject(imageURL, String.class);
-    //
-    // result.put("svgImageData", encResp);
-    // result.put("Status", "Success");
-    // } catch (RestClientException e) {
-    // e.printStackTrace();
-    // result.put("Status", "Image Not Found");
-    // }
-    // return result;
-    // // return sADatabaseService.getDiagram(encOption, diagramType, diagramId);
-    //
-    // }
-
     @RequestMapping(method = RequestMethod.GET, value = "/diagram")
     public Map<String, Object> getDiagram(@RequestParam String encOption, @RequestParam String diagramType,
 	    @RequestParam String diagramId) {
-	String encyclopedia = encOption.substring(0, encOption.indexOf("/"));
-	String workspace = encOption.substring(encOption.indexOf("/") + 1, encOption.length() - 1);
 
 	Map<String, Object> result = new HashMap<>();
 	result = sADatabaseService.getDiagram(encOption, diagramType, diagramId);
-
-	Object imgName = result.get("DiagramName");
 	Object imgObj = result.get("ImageData");
-
-	String outFile = encyclopedia + "_" + workspace + "_" + imgName.toString() + ".pdf";
 	byte[] imageInByte = (byte[]) imgObj;
-
-	PDDocument document = null;
-
 	if (imgObj != null && imageInByte.length > 0) {
 	    result.put("svgImageData", new String(imageInByte));
-	    // try {
-	    // document = createImagePdf(outFile, imageInByte);
-	    //
-	    // } catch (IOException e) {
-	    // e.printStackTrace();
-	    // }
-	    // result.put("pdfFile", document);
 	    result.put("Status", "Success");
 	} else {
 	    result.put("Status", "Image Not Found");
@@ -128,28 +77,59 @@ public class SAWrapperRestController {
 	return result;
     }
 
-    public PDDocument createImagePdf(String outFile, byte[] imageInByte) throws IOException {
-	InputStream in = new ByteArrayInputStream(imageInByte);
-	BufferedImage bImage = ImageIO.read(in);
+    @RequestMapping(value = "/getpdf", method = RequestMethod.GET)
+    public ResponseEntity<byte[]> getPDF(@RequestParam String encOption, @RequestParam String diagramType,
+	    @RequestParam String diagramId) {
+	String encyclopedia = encOption.substring(0, encOption.indexOf("/"));
+	String workspace = encOption.substring(encOption.indexOf("/") + 1, encOption.length() - 1);
 
-	PDDocument document = new PDDocument();
-	// PDDocument.load(new
-	// File("C:\\va_ea_dev\\workspace\\va_aes\\sawrapper\\src\\main\\resources\\Test.pdf"));
-	// PDPage page = document.getPage(0);
-	// float width = bImage.getWidth();
-	// float height = bImage.getHeight();
+	Map<String, Object> result = new HashMap<>();
+	result = sADatabaseService.getDiagram(encOption, diagramType, diagramId);
+	Object imgName = result.get("DiagramName");
+	Object imgObj = result.get("ImageData");
 
-	PDPage page = new PDPage();
-	document.addPage(page);
-	PDPageContentStream contentStream = new PDPageContentStream(document, page);
-	PDImageXObject pdImage = LosslessFactory.createFromImage(document, bImage);
-	float scale = 1f;
-	contentStream.drawImage(pdImage, 20, 20, pdImage.getWidth() * scale, pdImage.getHeight() * scale);
-	contentStream.close();
-	in.close();
-	document.save(outFile);
-	document.close();
-	return document;
+	String outFile = encyclopedia + "_" + workspace + "_" + imgName.toString() + ".pdf";
+	byte[] imageInByte = (byte[]) imgObj;
+
+	if (imgObj != null && imageInByte.length > 0) {
+
+	    try {
+		String imageSVGString = new String(imageInByte, "UTF-8");
+		imageSVGString = imageSVGString.replaceFirst("<svg ", "<svg xmlns=\"http://www.w3.org/2000/svg\" ");
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(imageSVGString.getBytes("UTF-8"));
+
+		TranscoderInput input_svg_image = new TranscoderInput(bais);
+		// Step-2: Define OutputStream to PDF file and attach to TranscoderOutput
+		ByteArrayOutputStream pdf_ostream = new ByteArrayOutputStream();
+		TranscoderOutput output_pdf_file = new TranscoderOutput(pdf_ostream);
+		// Step-3: Create a PDF Transcoder and define hints
+		Transcoder transcoder = new PDFTranscoder();
+		// System.out.println("input svg image: " + imageSVGString.substring(0, 500));
+		// Step-4: Write output to PDF format
+		transcoder.transcode(input_svg_image, output_pdf_file);
+		// Step 5- close / flush Output Stream
+		pdf_ostream.flush();
+		pdf_ostream.close();
+
+		byte[] contents = pdf_ostream.toByteArray();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.parseMediaType("application/pdf"));
+		// Here you have to set the actual filename of your pdf
+		String filename = imgName + ".pdf";
+		headers.setContentDispositionFormData(filename, filename);
+		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+		ResponseEntity<byte[]> response = new ResponseEntity<>(contents, headers, HttpStatus.OK);
+		return response;
+	    } catch (IOException | TranscoderException e) {
+		throw new RuntimeException(e);
+	    }
+
+	} else {
+	    throw new RuntimeException("Cannot generate pdf as image is not available");
+	}
+
     }
 
 }

@@ -19,7 +19,7 @@
 <body>
 	<!--  Start Header -->
 	<div class="container-fluid">
-		<div id="header">
+		<div id="header" style="display:none;">
 			<div class="main-header clearfix">
 				<div id="main-logo">
 					<a href="https://www.va.gov" title="Go to VA.gov" class="logo"><img
@@ -172,7 +172,7 @@
 	</div> -->
 	<br />
 	<div class="container-fluid">
-		<div id="footer">
+		<div id="footer" style="display:none;">
 			<div class="btn-group">
 				<a title="Intranet site for Department of Veterans Affairs"
 					target="_blank" href="http://vaww.va.gov/">VA Intranet Home</a> | <a
@@ -238,7 +238,16 @@
 	<script src="scripts/svg-pan-zoom.js"></script>
 	<script>
 	
-		$(function() {
+		$(window.document).ready(function() {
+			
+			
+			var url = window.location.href;
+			
+			 if(url.indexOf("inapp=true")==-1)//inap = true
+			 {
+				 $('#header').show();
+				 $('#footer').show();
+			 }
 			
 			$('#resultsPane').hide();
 			$('#definitionContainer').hide();
@@ -250,12 +259,7 @@
 			$('#defTypeOptionContainer').hide();
 			$('#diagOptionContainer').hide();
 			
-			var url = window.location.href;
-			 if(url.indexOf("inapp=true")!=-1)//inap = true
-			 {
-				 $('#header').hide();
-				 $('#footer').hide();
-			 }
+			
 			 
 			 
 			  var _ctx = $("meta[name='ctx']").attr("content");
@@ -267,7 +271,7 @@
 				        options.url = _ctx + options.url;
 				    }
 				}); 
-			 
+				
 			
 			$('#encOption').change(function() {
 				$('#submitBtn').attr('disabled', 'disabled');
@@ -400,7 +404,7 @@
 					var diagOptionVal = encodeURIComponent($('#diagOption').val());
 					var diag_data_url = "/rest/api/diagram?encOption="+encOptionVal+"&diagramType="+diagTypeOptionVal+"&diagramId="+diagOptionVal ;
 					$.getJSON(diag_data_url,function(data){
-			    		
+						 var _ctx = $("meta[name='ctx']").attr("content");
 			    		 
 			    		$('#diagramContainer').empty();
 			    		$('#loadingDiv').hide();
@@ -408,6 +412,7 @@
 			    			console.log($(data["svgImageData"]));
 			    		$('#diagramContainer').show();
 			    		$('#definitionContainer').hide();
+			    		$('#diagramContainer').append($('<div style="position:absolute"><a href="'+_ctx+"/rest/api/getpdf?encOption="+encOptionVal+"&diagramType="+diagTypeOptionVal+"&diagramId="+diagOptionVal +'">Download PDF</a></div>'))
 			    		$('#diagramContainer').append($(data["svgImageData"]));
 			    		$('#diagramContainer').height($(window).height()-20);
 			    		$('#resultsPane').show();
@@ -420,7 +425,7 @@
 			    	          zoomEnabled: true,
 			    	          controlIconsEnabled: true,
 			    	          fit: true,
-			    	          center: true,
+			    	          center: true
 			    	        });
 			    		}else {
 			    			alert("ERROR: Failed to get the SVG image for the selected diagram")
@@ -448,7 +453,7 @@
 		    				$('#defResults').empty();
 				    		$.each(data, function(key, entry){
 				    			
-				    		 if ( entry.VEAR_Link !=null){
+				    		 if ( entry.VEAR_Link !=null && entry.VEAR_Link !=""){
 				    			$('#defResults').append($('<tr><td><a href="'+entry.VEAR_Link+'" target="_blank">'+entry.name+'</a></td></tr>'));
 				    		 }else{
 				    			 $('#defResults').append($('<tr><td>'+entry.name+'</td></tr>'));

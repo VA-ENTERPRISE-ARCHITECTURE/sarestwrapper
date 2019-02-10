@@ -122,55 +122,86 @@ public class SADatabaseService {
 	    + "Where TheTypes.class = 3 and TheEntity.class = TheTypes.Class and TheEntity.type = TheTypes.Type\r\n"
 	    + "and TheEntity.WID  = ?  and TheEntity.Activity <> 'D' Order by 1";
 
-    // public List<Map<String, Object>> getDifinitions(String encOption, String
-    // typeNumber) {
-    // String encyclopedia = encOption.substring(0, encOption.indexOf("/"));
-    // String workspaceId = encOption.substring(encOption.indexOf("/") + 1);
-    // if ("1".equals(workspaceId)) {
-    // return
-    // jdbcTemplatesMap.get(encyclopedia).queryForList(DEFINITIONS_LIST_QUERY_NO_WID,
-    // Integer.valueOf(typeNumber));
-    // } else {
-    // return
-    // jdbcTemplatesMap.get(encyclopedia).queryForList(DEFINITIONS_LIST_QUERY,
-    // Integer.valueOf(typeNumber),
-    // Integer.valueOf(workspaceId));
-    // }
-    // }
-    //
-    // private static String DEFINITIONS_LIST_QUERY_NO_WID = "SELECT TheEntity.name,
-    // TheEntity.ID FROM Entity as TheEntity Where TheEntity.class = 3 and "
-    // + "TheEntity.Type =? AND TheEntity.Activity <> 'D'";
-    //
-    // private static String DEFINITIONS_LIST_QUERY = "SELECT TheEntity.name,
-    // TheEntity.ID FROM Entity as TheEntity Where TheEntity.class = 3 and "
-    // + "TheEntity.Type =? AND TheEntity.WID =? AND TheEntity.Activity <> 'D'";
-
-    public List<Map<String, Object>> getDifinitionsVearLink(String encOption, String typeNumber) {
+     public List<Map<String, Object>> getDifinitionsVearLink(String encOption, String typeNumber) {
 	String encyclopedia = encOption.substring(0, encOption.indexOf("/"));
 	String workspaceId = encOption.substring(encOption.indexOf("/") + 1);
 	List<Map<String, Object>> resultmap = null;
 	if ("1".equals(workspaceId)) {
 	    resultmap = jdbcTemplatesMap.get(encyclopedia).queryForList(DEFINITIONS_VEAR_LINK_QUERY_NO_WID,
-		    Integer.valueOf(typeNumber));
+		    Integer.valueOf(typeNumber), Integer.valueOf(typeNumber), Integer.valueOf(typeNumber));
 	} else {
 	    resultmap = jdbcTemplatesMap.get(encyclopedia).queryForList(DEFINITIONS_VEAR_LINK_QUERY,
-		    Integer.valueOf(workspaceId), Integer.valueOf(typeNumber));
+		    Integer.valueOf(workspaceId), Integer.valueOf(typeNumber), Integer.valueOf(workspaceId),
+		    Integer.valueOf(typeNumber), Integer.valueOf(workspaceId), Integer.valueOf(typeNumber));
 	}
 	return resultmap;
     }
 
-    private static String DEFINITIONS_VEAR_LINK_QUERY_NO_WID = "Select TheEntity.name, TheXML.VEAR_Link From (Select Name, ID, Type, Activity, Class from Entity) as TheEntity,\r\n"
-	    + "(Select distinct T.N.value('(../P[@N=\"VEAR Link\"]/@V)[1]', 'nvarchar(256)') \"VEAR_Link\"\r\n"
-	    + ", entityxml.ID From Entityxml Cross Apply Propertiesxml.nodes('/R/P') As T(N) ) as TheXML\r\n"
-	    + "Where TheEntity.Class = 3  And TheEntity.type =  ?	\r\n"
-	    + "And TheEntity.Activity <> 'D' And TheXML.id = TheEntity.id ";
+    private static String DEFINITIONS_VEAR_LINK_QUERY_NO_WID = "Select TheEntity.name, (Select Substring(TheEntity.shortprops, (Select( TheEntity.LinkPos + 15)),(Select (TheEntity.DelPos - (Select( TheEntity.LinkPos + 15)))))) as VEAR_Link\r\n"
+	    + "From\r\n"
+	    + "(Select Name, ID, Type, Activity, Class, ShortProps, Charindex('[[[VEAR Link]]]',Entity.ShortProps) as LinkPos , Charindex('[[[Deleted in VEAR?]]]',Entity.ShortProps) as DelPos\r\n"
+	    + " from Entity Where Entity.ShortProps like '%VEAR Link%' and Entity.ShortProps like '%Deleted in VEAR%' and Charindex('[[[VEAR Link]]]',Entity.ShortProps) <>0 and Charindex('[[[Deleted in VEAR?]]]',Entity.ShortProps)<>0 ) as TheEntity\r\n"
+	    + "Where\r\n"
+	    + "TheEntity.Class = 3                                              /*Leave set as 3 since this is a definition specific query */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.type =  ?											/* Set the Desired Definition Type.  This is just for speed */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.Activity <> 'D'											/* Is the definition marked for deletion? */\r\n"
+	    + "UNION\r\n"
+	    + "Select TheEntity.name, (Select Substring(TheEntity.Properties, (Select( TheEntity.LinkPos + 15)),(Select (TheEntity.DelPos - (Select( TheEntity.LinkPos + 15)))))) as VEAR_Link\r\n"
+	    + "From\r\n"
+	    + "(Select Name, ID, Type, Activity, Class, Properties, Charindex('[[[VEAR Link]]]',Entity.Properties) as LinkPos , Charindex('[[[Deleted in VEAR?]]]',Entity.Properties) as DelPos \r\n"
+	    + "from Entity Where Entity.Properties like '%VEAR Link%' and Entity.Properties like '%Deleted in VEAR%' and Charindex('[[[VEAR Link]]]',Entity.Properties) <>0 and Charindex('[[[Deleted in VEAR?]]]',Entity.Properties)<>0 ) as TheEntity\r\n"
+	    + "Where\r\n"
+	    + "TheEntity.Class = 3                                              /*Leave set as 3 since this is a definition specific query */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.type =  ?											/* Set the Desired Definition Type.  This is just for speed */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.Activity <> 'D'											/* Is the definition marked for deletion? */\r\n"
+	    + "UNION\r\n" + "Select TheEntity.name, '' as VEAR_Link\r\n" + "From\r\n"
+	    + "(Select Name, ID, Type, Activity, Class\r\n"
+	    + "from Entity Where (Charindex('aac.dva.va.gov/ee/request/',Entity.Properties) = 0 AND Charindex('aac.dva.va.gov/ee/request/',Entity.ShortProps)=0) )as TheEntity\r\n"
+	    + "Where\r\n"
+	    + "TheEntity.Class = 3                                              /*Leave set as 3 since this is a definition specific query */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.type =  ?											/* Set the Desired Definition Type.  This is just for speed */\r\n"
+	    + "And\r\n" + "TheEntity.Activity <> 'D'	\r\n" + "order by 1";
 
-    private static String DEFINITIONS_VEAR_LINK_QUERY = "Select TheEntity.name, TheXML.VEAR_Link From (Select Name, ID, WID, Type, Activity, Class from Entity) as TheEntity,\r\n"
-	    + "(Select distinct T.N.value('(../P[@N=\"VEAR Link\"]/@V)[1]', 'nvarchar(256)') \"VEAR_Link\"\r\n"
-	    + ", entityxml.ID, entityxml.WID From Entityxml Cross Apply Propertiesxml.nodes('/R/P') As T(N) ) as TheXML\r\n"
-	    + "Where TheEntity.wid = ? And TheXML.wid = TheEntity.WID and TheEntity.Class = 3  And TheEntity.type =  ?	\r\n"
-	    + "And TheEntity.Activity <> 'D' And TheXML.id = TheEntity.id ";
+    private static String DEFINITIONS_VEAR_LINK_QUERY = "Select TheEntity.name, (Select Substring(TheEntity.shortprops, (Select( TheEntity.LinkPos + 15)),(Select (TheEntity.DelPos - (Select( TheEntity.LinkPos + 15)))))) as VEAR_Link\r\n"
+	    + "From\r\n"
+	    + "(Select Name, ID, WID, Type, Activity, Class, ShortProps, Charindex('[[[VEAR Link]]]',Entity.ShortProps) as LinkPos , Charindex('[[[Deleted in VEAR?]]]',Entity.ShortProps) as DelPos\r\n"
+	    + " from Entity Where Entity.ShortProps like '%VEAR Link%' and Entity.ShortProps like '%Deleted in VEAR%' and Charindex('[[[VEAR Link]]]',Entity.ShortProps) <>0 and Charindex('[[[Deleted in VEAR?]]]',Entity.ShortProps)<>0 ) as TheEntity\r\n"
+	    + "Where\r\n"
+	    + "TheEntity.wid = ?                                                /* Set the Desired Workspace ID */\r\n"
+	    + "and\r\n"
+	    + "TheEntity.Class = 3                                              /*Leave set as 3 since this is a definition specific query */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.type =  ?											/* Set the Desired Definition Type.  This is just for speed */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.Activity <> 'D'											/* Is the definition marked for deletion? */\r\n"
+	    + "UNION\r\n"
+	    + "Select TheEntity.name, (Select Substring(TheEntity.Properties, (Select( TheEntity.LinkPos + 15)),(Select (TheEntity.DelPos - (Select( TheEntity.LinkPos + 15)))))) as VEAR_Link\r\n"
+	    + "From\r\n"
+	    + "(Select Name, ID, WID, Type, Activity, Class, Properties, Charindex('[[[VEAR Link]]]',Entity.Properties) as LinkPos , Charindex('[[[Deleted in VEAR?]]]',Entity.Properties) as DelPos \r\n"
+	    + "from Entity Where Entity.Properties like '%VEAR Link%' and Entity.Properties like '%Deleted in VEAR%' and Charindex('[[[VEAR Link]]]',Entity.Properties) <>0 and Charindex('[[[Deleted in VEAR?]]]',Entity.Properties)<>0 ) as TheEntity\r\n"
+	    + "Where\r\n"
+	    + "TheEntity.wid = ?                                              /* Set the Desired Workspace ID */\r\n"
+	    + "and\r\n"
+	    + "TheEntity.Class = 3                                              /*Leave set as 3 since this is a definition specific query */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.type =  ?											/* Set the Desired Definition Type.  This is just for speed */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.Activity <> 'D'											/* Is the definition marked for deletion? */\r\n"
+	    + "UNION\r\n" + "Select TheEntity.name, '' as VEAR_Link\r\n" + "From\r\n"
+	    + "(Select Name, ID, WID, Type, Activity, Class\r\n"
+	    + "from Entity Where (Charindex('aac.dva.va.gov/ee/request/',Entity.Properties) = 0 AND Charindex('aac.dva.va.gov/ee/request/',Entity.ShortProps)=0) )as TheEntity\r\n"
+	    + "Where\r\n"
+	    + "TheEntity.wid = ?                                                /* Set the Desired Workspace ID */\r\n"
+	    + "and\r\n"
+	    + "TheEntity.Class = 3                                              /*Leave set as 3 since this is a definition specific query */\r\n"
+	    + "And\r\n"
+	    + "TheEntity.type =  ?											/* Set the Desired Definition Type.  This is just for speed */\r\n"
+	    + "And\r\n" + "TheEntity.Activity <> 'D'	\r\n" + "order by 1";
 
     public boolean isSADBAccessible() {
 	Timestamp t = null;
